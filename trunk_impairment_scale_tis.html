@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trunk Impairment Scale (TIS)</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', sans-serif;
+    background: #f5f5f3;
+    color: #1a1a18;
+    padding: 2rem 1rem;
+    min-height: 100vh;
+  }
+  .page { max-width: 720px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .header { border-bottom: 2px solid #d0cfc7; padding-bottom: 1rem; margin-bottom: 1.5rem; }
+  .title { font-size: 20px; font-weight: 600; color: #1a1a18; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #888780; }
+  .patient-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; }
+  .patient-grid input {
+    width: 100%; padding: 7px 10px;
+    border: 0.5px solid #b4b2a9; border-radius: 8px;
+    font-size: 13px; background: #fff; color: #1a1a18;
+  }
+  .patient-grid input::placeholder { color: #b4b2a9; }
+  .section { margin-bottom: 1.5rem; border: 0.5px solid #d3d1c7; border-radius: 12px; overflow: hidden; }
+  .section-head { padding: 10px 14px; font-size: 13px; font-weight: 500; display: flex; justify-content: space-between; align-items: center; }
+  .sec-blue { background: #E6F1FB; color: #0C447C; }
+  .sec-teal { background: #E1F5EE; color: #085041; }
+  .sec-amber { background: #FAEEDA; color: #633806; }
+  .sec-score { font-size: 12px; font-weight: 400; opacity: 0.8; }
+  .item { padding: 10px 14px; border-top: 0.5px solid #d3d1c7; background: #fff; }
+  .item-label { font-size: 13px; color: #1a1a18; margin-bottom: 8px; line-height: 1.5; }
+  .item-note { font-size: 11px; color: #5f5e5a; margin-bottom: 8px; line-height: 1.5; padding: 6px 8px; background: #f1efe8; border-radius: 6px; }
+  .radio-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .radio-btn {
+    display: flex; align-items: center; gap: 5px; cursor: pointer;
+    padding: 5px 10px; border: 0.5px solid #b4b2a9; border-radius: 20px;
+    font-size: 12px; color: #5f5e5a; transition: all 0.15s; background: #fff; user-select: none;
+  }
+  .radio-btn:hover { border-color: #888780; color: #1a1a18; }
+  .radio-btn.sel-blue { background: #E6F1FB; border-color: #185FA5; color: #185FA5; }
+  .radio-btn.sel-teal { background: #E1F5EE; border-color: #0F6E56; color: #0F6E56; }
+  .radio-btn.sel-amber { background: #FAEEDA; border-color: #854F0B; color: #854F0B; }
+  .radio-btn input { display: none; }
+  .total-box { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 1.5rem; }
+  .score-card { background: #f1efe8; border-radius: 8px; padding: 10px 12px; text-align: center; }
+  .score-card.total { background: #E6F1FB; }
+  .score-label { font-size: 11px; color: #5f5e5a; margin-bottom: 4px; }
+  .score-card.total .score-label { color: #185FA5; }
+  .score-num { font-size: 22px; font-weight: 500; color: #1a1a18; }
+  .score-card.total .score-num { color: #185FA5; }
+  .score-max { font-size: 11px; color: #888780; }
+  .result-bar { height: 8px; border-radius: 4px; background: #d3d1c7; margin-bottom: 1.5rem; overflow: hidden; }
+  .result-fill { height: 100%; border-radius: 4px; background: #185FA5; transition: width 0.3s; }
+  .comment-area {
+    width: 100%; min-height: 60px; padding: 8px 10px;
+    border: 0.5px solid #b4b2a9; border-radius: 8px;
+    font-size: 13px; background: #fff; color: #1a1a18;
+    resize: vertical; font-family: inherit;
+  }
+  .btn-row { display: flex; gap: 8px; margin-top: 1rem; }
+  .btn {
+    padding: 8px 16px; border: 0.5px solid #b4b2a9; border-radius: 8px;
+    font-size: 13px; cursor: pointer; background: #fff; color: #1a1a18;
+  }
+  .btn:hover { background: #f1efe8; }
+  .btn-primary { background: #185FA5; color: #E6F1FB; border-color: #185FA5; }
+  .btn-primary:hover { background: #0C447C; }
+  .result-panel {
+    display: none; margin-top: 1.5rem; padding: 1rem 1.25rem;
+    border: 0.5px solid #B5D4F4; border-radius: 12px; background: #E6F1FB;
+  }
+  .result-panel h3 { font-size: 14px; font-weight: 500; color: #0C447C; margin-bottom: 10px; }
+  .result-panel table { width: 100%; font-size: 13px; border-collapse: collapse; }
+  .result-panel td { padding: 4px 8px; color: #185FA5; }
+  .result-panel td:first-child { color: #0C447C; font-weight: 500; width: 40%; }
+  @media print {
+    body { background: #fff; padding: 0; }
+    .page { box-shadow: none; padding: 1rem; }
+    .btn-row, .result-panel { display: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="title">Trunk Impairment Scale (TIS)</div>
+    <div class="subtitle">체간 손상 척도 검사 · Version 2.0 (Verheyden et al., 2004)</div>
+  </div>
+
+  <div class="patient-grid">
+    <input type="text" placeholder="환자명" id="pt-name">
+    <input type="text" placeholder="등록번호 / ID" id="pt-id">
+    <input type="text" placeholder="검사자" id="examiner">
+    <input type="date" id="exam-date">
+    <input type="text" placeholder="진단명" id="diagnosis" style="grid-column:1/-1">
+  </div>
+
+  <div id="sections"></div>
+
+  <div class="total-box">
+    <div class="score-card">
+      <div class="score-label">정적 균형</div>
+      <div class="score-num" id="s1">0</div>
+      <div class="score-max">/ 7</div>
+    </div>
+    <div class="score-card">
+      <div class="score-label">동적 균형</div>
+      <div class="score-num" id="s2">0</div>
+      <div class="score-max">/ 10</div>
+    </div>
+    <div class="score-card">
+      <div class="score-label">협응</div>
+      <div class="score-num" id="s3">0</div>
+      <div class="score-max">/ 6</div>
+    </div>
+    <div class="score-card total">
+      <div class="score-label">총점</div>
+      <div class="score-num" id="s-total">0</div>
+      <div class="score-max">/ 23</div>
+    </div>
+  </div>
+
+  <div class="result-bar"><div class="result-fill" id="prog" style="width:0%"></div></div>
+
+  <div style="margin-bottom:1rem">
+    <div style="font-size:13px;color:#5f5e5a;margin-bottom:6px">특이사항 / 소견</div>
+    <textarea class="comment-area" id="comments" placeholder="검사 중 특이사항이나 임상 소견을 기록하세요"></textarea>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="showResult()">결과 보기</button>
+    <button class="btn" onclick="window.print()">인쇄</button>
+    <button class="btn" onclick="resetAll()">초기화</button>
+  </div>
+
+  <div class="result-panel" id="result-panel">
+    <h3>검사 결과 요약</h3>
+    <table id="result-table"></table>
+  </div>
+</div>
+
+<script>
+const data = {
+  sections:[
+    {
+      id:'s1', label:'섹션 1 · 정적 균형 (Static Sitting Balance)', color:'blue', max:7,
+      items:[
+        {
+          id:'s1i1', q:'항목 1. 초기 자세 유지 10초 (Maintain starting position 10 s)',
+          note:'치료사가 올바른 초기 자세로 앉힌다. 등받이·팔받침 없이 10초간 자세를 유지하도록 지시. ★ 0점이면 TIS 총점 = 0점.',
+          opts:[{v:0,l:'0점 — 낙상하거나 팔 지지 필요'},{v:2,l:'2점 — 10초간 자세 유지'}]
+        },
+        {
+          id:'s1i2', q:'항목 2. 치료사가 건측 다리 교차 후 자세 유지 10초 (Therapist crosses strongest leg — maintain 10 s)',
+          note:'치료사가 건측 다리를 환측 무릎 위에 올려준다. 10초간 유지하도록 지시.',
+          opts:[{v:0,l:'0점 — 낙상하거나 팔 지지 필요'},{v:2,l:'2점 — 10초간 자세 유지'}]
+        },
+        {
+          id:'s1i3', q:'항목 3. 환자가 직접 건측 다리 교차 (Patient crosses strongest leg over weakest)',
+          note:'환자 스스로 건측 다리를 환측 무릎 위에 올린다.',
+          opts:[{v:0,l:'0점 — 낙상'},{v:1,l:'1점 — 팔 지지 필요'},{v:2,l:'2점 — 체간 10cm↑ 이동 또는 팔로 보조'},{v:3,l:'3점 — 체간·팔 보상 없이 수행'}]
+        }
+      ]
+    },
+    {
+      id:'s2', label:'섹션 2 · 동적 균형 (Dynamic Sitting Balance)', color:'teal', max:10,
+      items:[
+        { id:'s2i1', q:'항목 4. 건측 엉덩이 들기 (Lift unaffected side hip)', note:'건측 엉덩이를 들어올려 치료 테이블에서 떨어지게 한다. 보상 전략(팔·반대측 다리 사용) 없이 수행해야 함.', opts:[{v:0,l:'0점 — 불가'},{v:1,l:'1점 — 가능'}] },
+        { id:'s2i2', q:'항목 5. 건측 엉덩이 들기 — 보상 없음 (Lift unaffected hip — no compensation)', note:'팔 또는 반대측 다리로 지지하지 않고 건측 엉덩이를 들어올린다.', opts:[{v:0,l:'0점 — 불가 또는 보상 사용'},{v:1,l:'1점 — 보상 없이 수행'}] },
+        { id:'s2i3', q:'항목 6. 환측 엉덩이 들기 (Lift affected side hip)', note:'환측 엉덩이를 들어올려 치료 테이블에서 떨어지게 한다.', opts:[{v:0,l:'0점 — 불가'},{v:1,l:'1점 — 가능'}] },
+        { id:'s2i4', q:'항목 7. 환측 엉덩이 들기 — 보상 없음 (Lift affected hip — no compensation)', note:'팔 또는 반대측 다리로 지지하지 않고 환측 엉덩이를 들어올린다.', opts:[{v:0,l:'0점 — 불가 또는 보상 사용'},{v:1,l:'1점 — 보상 없이 수행'}] },
+        { id:'s2i5', q:'항목 8. 건측으로 측방 굴곡 (Lateral flexion toward unaffected side)', note:'건측 팔꿈치가 치료 테이블에 닿도록 체간을 건측으로 굴곡시킨다.', opts:[{v:0,l:'0점 — 불가'},{v:1,l:'1점 — 가능'}] },
+        { id:'s2i6', q:'항목 9. 건측 측방 굴곡 — 보상 없음 (Lateral flexion unaffected — no compensation)', note:'환측 팔꿈치를 무릎으로 밀거나 다리로 지지하지 않고 수행.', opts:[{v:0,l:'0점 — 불가 또는 보상 사용'},{v:1,l:'1점 — 보상 없이 수행'}] },
+        { id:'s2i7', q:'항목 10. 환측으로 측방 굴곡 (Lateral flexion toward affected side)', note:'환측 팔꿈치가 치료 테이블에 닿도록 체간을 환측으로 굴곡시킨다.', opts:[{v:0,l:'0점 — 불가'},{v:1,l:'1점 — 가능'}] },
+        { id:'s2i8', q:'항목 11. 환측 측방 굴곡 — 보상 없음 (Lateral flexion affected — no compensation)', note:'건측 팔꿈치를 무릎으로 밀거나 다리로 지지하지 않고 수행.', opts:[{v:0,l:'0점 — 불가 또는 보상 사용'},{v:1,l:'1점 — 보상 없이 수행'}] },
+        { id:'s2i9', q:'항목 12. 전방 뻗기 — 어깨 높이 (Forward reach to shoulder height)', note:'양팔을 앞으로 어깨 높이까지 뻗는다. 발이 고정되지 않아야 함.', opts:[{v:0,l:'0점 — 불가'},{v:1,l:'1점 — 가능'}] },
+        { id:'s2i10', q:'항목 13. 전방 뻗기 — 어깨 높이 이상 (Forward reach beyond shoulder height)', note:'양팔을 어깨 높이 이상으로 뻗는다. 발이 고정되지 않아야 함.', opts:[{v:0,l:'0점 — 불가'},{v:1,l:'1점 — 가능'}] }
+      ]
+    },
+    {
+      id:'s3', label:'섹션 3 · 협응 (Co-ordination)', color:'amber', max:6,
+      items:[
+        { id:'s3i1', q:'항목 14. 상부 체간 — 건측으로 3회 회전 (Upper trunk rotation toward unaffected — 3×)', note:'어깨 거들에서 시작하여 상부 체간을 건측으로 3회 회전. 각 회전은 독립적으로 수행.', opts:[{v:0,l:'0점 — 불가'},{v:1,l:'1점 — 비대칭적 수행 또는 3회 미만'},{v:2,l:'2점 — 대칭적으로 3회 수행'}] },
+        { id:'s3i2', q:'항목 15. 상부 체간 — 환측으로 3회 회전 (Upper trunk rotation toward affected — 3×)', note:'어깨 거들에서 시작하여 상부 체간을 환측으로 3회 회전.', opts:[{v:0,l:'0점 — 불가'},{v:1,l:'1점 — 비대칭적 수행 또는 3회 미만'},{v:2,l:'2점 — 대칭적으로 3회 수행'}] },
+        { id:'s3i3', q:'항목 16. 하부 체간 — 건측으로 3회 회전 (Lower trunk rotation toward unaffected — 3×)', note:'골반 거들에서 시작하여 하부 체간을 건측으로 3회 회전. 상부 체간 고정.', opts:[{v:0,l:'0점 — 불가'},{v:1,l:'1점 — 비대칭적 수행 또는 3회 미만'},{v:2,l:'2점 — 대칭적으로 3회 수행'}] },
+        { id:'s3i4', q:'항목 17. 하부 체간 — 환측으로 3회 회전 (Lower trunk rotation toward affected — 3×)', note:'골반 거들에서 시작하여 하부 체간을 환측으로 3회 회전. 상부 체간 고정.', opts:[{v:0,l:'0점 — 불가'},{v:1,l:'1점 — 비대칭적 수행 또는 3회 미만'},{v:2,l:'2점 — 대칭적으로 3회 수행'}] }
+      ]
+    }
+  ]
+};
+
+const colorMap = {blue:'sel-blue',teal:'sel-teal',amber:'sel-amber'};
+const headMap = {blue:'sec-blue',teal:'sec-teal',amber:'sec-amber'};
+const scores = {};
+
+function build(){
+  const cont = document.getElementById('sections');
+  data.sections.forEach(sec=>{
+    const div = document.createElement('div');
+    div.className='section';
+    let html=`<div class="section-head ${headMap[sec.color]}"><span>${sec.label}</span><span class="sec-score" id="sh-${sec.id}">0 / ${sec.max}점</span></div>`;
+    sec.items.forEach(item=>{
+      scores[item.id]=0;
+      html+=`<div class="item"><div class="item-label">${item.q}</div>`;
+      if(item.note) html+=`<div class="item-note">${item.note}</div>`;
+      html+=`<div class="radio-row">`;
+      item.opts.forEach(opt=>{
+        html+=`<label class="radio-btn" id="rb-${item.id}-${opt.v}" onclick="select('${item.id}',${opt.v},'${sec.color}','${sec.id}')"><input type="radio" name="${item.id}" value="${opt.v}"><span>${opt.v}점 — ${opt.l}</span></label>`;
+      });
+      html+=`</div></div>`;
+    });
+    div.innerHTML=html;
+    cont.appendChild(div);
+  });
+}
+
+function select(itemId,val,color,secId){
+  const sec=data.sections.find(s=>s.id===secId);
+  const item=sec.items.find(i=>i.id===itemId);
+  item.opts.forEach(o=>{
+    const el=document.getElementById(`rb-${itemId}-${o.v}`);
+    if(el) el.classList.remove('sel-blue','sel-teal','sel-amber');
+  });
+  const selEl=document.getElementById(`rb-${itemId}-${val}`);
+  if(selEl) selEl.classList.add(colorMap[color]);
+  scores[itemId]=val;
+  updateScores();
+}
+
+function updateScores(){
+  let t1=0,t2=0,t3=0;
+  data.sections[0].items.forEach(i=>t1+=scores[i.id]||0);
+  data.sections[1].items.forEach(i=>t2+=scores[i.id]||0);
+  data.sections[2].items.forEach(i=>t3+=scores[i.id]||0);
+  const tot=t1+t2+t3;
+  document.getElementById('s1').textContent=t1;
+  document.getElementById('s2').textContent=t2;
+  document.getElementById('s3').textContent=t3;
+  document.getElementById('s-total').textContent=tot;
+  document.getElementById('prog').style.width=Math.round(tot/23*100)+'%';
+  document.getElementById('sh-s1').textContent=`${t1} / 7점`;
+  document.getElementById('sh-s2').textContent=`${t2} / 10점`;
+  document.getElementById('sh-s3').textContent=`${t3} / 6점`;
+}
+
+function showResult(){
+  let t1=0,t2=0,t3=0;
+  data.sections[0].items.forEach(i=>t1+=scores[i.id]||0);
+  data.sections[1].items.forEach(i=>t2+=scores[i.id]||0);
+  data.sections[2].items.forEach(i=>t3+=scores[i.id]||0);
+  const tot=t1+t2+t3;
+  const pct=Math.round(tot/23*100);
+  const rows=[
+    ['환자명', document.getElementById('pt-name').value||'-'],
+    ['등록번호', document.getElementById('pt-id').value||'-'],
+    ['검사자', document.getElementById('examiner').value||'-'],
+    ['검사일', document.getElementById('exam-date').value||'-'],
+    ['진단명', document.getElementById('diagnosis').value||'-'],
+    ['정적 균형', `${t1} / 7점`],
+    ['동적 균형', `${t2} / 10점`],
+    ['협응', `${t3} / 6점`],
+    ['총점', `${tot} / 23점 (${pct}%)`],
+    ['특이사항', document.getElementById('comments').value||'-'],
+  ];
+  const tb=document.getElementById('result-table');
+  tb.innerHTML=rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
+  const panel=document.getElementById('result-panel');
+  panel.style.display='block';
+  panel.scrollIntoView({behavior:'smooth'});
+}
+
+function resetAll(){
+  data.sections.forEach(sec=>{
+    sec.items.forEach(item=>{
+      scores[item.id]=0;
+      item.opts.forEach(o=>{
+        const el=document.getElementById(`rb-${item.id}-${o.v}`);
+        if(el) el.classList.remove('sel-blue','sel-teal','sel-amber');
+      });
+    });
+  });
+  ['s1','s2','s3','s-total'].forEach(id=>document.getElementById(id).textContent='0');
+  document.getElementById('prog').style.width='0%';
+  document.getElementById('sh-s1').textContent='0 / 7점';
+  document.getElementById('sh-s2').textContent='0 / 10점';
+  document.getElementById('sh-s3').textContent='0 / 6점';
+  document.getElementById('comments').value='';
+  ['pt-name','pt-id','examiner','diagnosis'].forEach(id=>{document.getElementById(id).value='';});
+  document.getElementById('exam-date').value='';
+  document.getElementById('result-panel').style.display='none';
+}
+
+build();
+</script>
+</body>
+</html>

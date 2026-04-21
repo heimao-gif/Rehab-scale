@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modified Barthel Index (MBI)</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', sans-serif; background: #f5f5f3; color: #1a1a18; padding: 2rem 1rem; min-height: 100vh; }
+  .page { max-width: 720px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .header { border-bottom: 2px solid #d0cfc7; padding-bottom: 1rem; margin-bottom: 1.5rem; }
+  .title { font-size: 20px; font-weight: 600; color: #1a1a18; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #888780; }
+  .patient-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; }
+  .patient-grid input { width: 100%; padding: 7px 10px; border: 0.5px solid #b4b2a9; border-radius: 8px; font-size: 13px; background: #fff; color: #1a1a18; }
+  .patient-grid input::placeholder { color: #b4b2a9; }
+  .cat-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #888780; margin: 1.25rem 0 0.5rem; }
+  .section { margin-bottom: 8px; border: 0.5px solid #d3d1c7; border-radius: 10px; overflow: hidden; }
+  .item-head { padding: 10px 14px; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; background: #fff; cursor: pointer; user-select: none; }
+  .item-head:hover { background: #f8f8f6; }
+  .item-title { font-size: 13px; font-weight: 600; color: #1a1a18; line-height: 1.4; }
+  .item-sub { font-size: 11px; color: #888780; margin-top: 2px; }
+  .item-badge { flex-shrink: 0; font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 20px; background: #f1efe8; color: #5f5e5a; white-space: nowrap; }
+  .item-badge.b-low { background: #FCEBEB; color: #A32D2D; }
+  .item-badge.b-mid { background: #FAEEDA; color: #633806; }
+  .item-badge.b-high { background: #E1F5EE; color: #085041; }
+  .item-badge.b-full { background: #E6F1FB; color: #0C447C; }
+  .item-body { display: none; border-top: 0.5px solid #d3d1c7; padding: 10px 14px; background: #fff; }
+  .item-body.open { display: block; }
+  .cond-note { font-size: 11px; color: #854F0B; padding: 6px 8px; background: #FAEEDA; border-radius: 6px; margin-bottom: 8px; line-height: 1.5; }
+  .radio-col { display: flex; flex-direction: column; gap: 6px; }
+  .radio-btn { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; padding: 7px 10px; border: 0.5px solid #d3d1c7; border-radius: 8px; font-size: 12px; color: #5f5e5a; transition: all 0.15s; background: #fff; line-height: 1.4; user-select: none; }
+  .radio-btn:hover { border-color: #888780; background: #f8f8f6; }
+  .radio-btn.sel { background: #E6F1FB; border-color: #185FA5; color: #185FA5; }
+  .radio-btn input { display: none; }
+  .sdot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .d0{background:#E24B4A}.d1{background:#EF9F27}.d2{background:#BA7517}.d3{background:#639922}.d4{background:#0F6E56}
+  .sv { font-weight: 600; min-width: 28px; }
+  .total-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin: 1.5rem 0; }
+  .score-card { background: #f1efe8; border-radius: 8px; padding: 10px 12px; text-align: center; }
+  .score-card.total { background: #E6F1FB; }
+  .score-label { font-size: 11px; color: #5f5e5a; margin-bottom: 4px; }
+  .score-card.total .score-label { color: #185FA5; }
+  .score-num { font-size: 22px; font-weight: 600; color: #1a1a18; }
+  .score-card.total .score-num { color: #185FA5; }
+  .score-max { font-size: 11px; color: #888780; }
+  .interp-bar { height: 8px; border-radius: 4px; background: #d3d1c7; margin-bottom: 6px; overflow: hidden; }
+  .interp-fill { height: 100%; border-radius: 4px; transition: width 0.3s, background 0.3s; width: 0%; background: #E24B4A; }
+  .interp-label { font-size: 12px; color: #5f5e5a; text-align: right; margin-bottom: 1.5rem; font-weight: 500; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.5rem; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #5f5e5a; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .comment-area { width: 100%; min-height: 60px; padding: 8px 10px; border: 0.5px solid #b4b2a9; border-radius: 8px; font-size: 13px; background: #fff; color: #1a1a18; resize: vertical; font-family: inherit; }
+  .btn-row { display: flex; gap: 8px; margin-top: 1rem; }
+  .btn { padding: 8px 16px; border: 0.5px solid #b4b2a9; border-radius: 8px; font-size: 13px; cursor: pointer; background: #fff; color: #1a1a18; }
+  .btn:hover { background: #f1efe8; }
+  .btn-primary { background: #185FA5; color: #E6F1FB; border-color: #185FA5; }
+  .btn-primary:hover { background: #0C447C; }
+  .result-panel { display: none; margin-top: 1.5rem; padding: 1rem 1.25rem; border: 0.5px solid #B5D4F4; border-radius: 12px; background: #E6F1FB; }
+  .result-panel h3 { font-size: 14px; font-weight: 600; color: #0C447C; margin-bottom: 10px; }
+  .result-panel table { width: 100%; font-size: 13px; border-collapse: collapse; }
+  .result-panel td { padding: 4px 8px; color: #185FA5; }
+  .result-panel td:first-child { color: #0C447C; font-weight: 600; width: 45%; }
+  @media print {
+    body { background: #fff; padding: 0; }
+    .page { box-shadow: none; padding: 1rem; }
+    .btn-row, .result-panel { display: none !important; }
+    .item-body { display: block !important; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="title">Modified Barthel Index (MBI)</div>
+    <div class="subtitle">수정 바델 지수 · Shah, Vanclay &amp; Cooper, 1989 · 총 100점</div>
+  </div>
+  <div class="patient-grid">
+    <input type="text" placeholder="환자명" id="pt-name">
+    <input type="text" placeholder="등록번호 / ID" id="pt-id">
+    <input type="text" placeholder="검사자" id="examiner">
+    <input type="date" id="exam-date">
+    <input type="text" placeholder="진단명" id="diagnosis" style="grid-column:1/-1">
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#E24B4A"></div>완전 의존</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#EF9F27"></div>최대 도움</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#BA7517"></div>중등도 도움</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#639922"></div>최소 도움</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#0F6E56"></div>완전 독립</div>
+  </div>
+  <div class="cat-label">자기관리 (Self-Care) — 최대 55점</div>
+  <div id="sec-sc"></div>
+  <div class="cat-label">이동 및 보행 (Mobility) — 최대 45점</div>
+  <div id="sec-mo"></div>
+  <div class="total-row">
+    <div class="score-card"><div class="score-label">자기관리</div><div class="score-num" id="tot-sc">0</div><div class="score-max">/ 55</div></div>
+    <div class="score-card"><div class="score-label">이동·보행</div><div class="score-num" id="tot-mo">0</div><div class="score-max">/ 45</div></div>
+    <div class="score-card total"><div class="score-label">MBI 총점</div><div class="score-num" id="tot-all">0</div><div class="score-max">/ 100</div></div>
+  </div>
+  <div class="interp-bar"><div class="interp-fill" id="i-fill"></div></div>
+  <div class="interp-label" id="i-label">완전 의존 (0–20)</div>
+  <div style="margin-bottom:1rem">
+    <div style="font-size:13px;color:#5f5e5a;margin-bottom:6px">특이사항 / 소견</div>
+    <textarea class="comment-area" id="comments" placeholder="검사 중 특이사항이나 임상 소견을 기록하세요"></textarea>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="showResult()">결과 보기</button>
+    <button class="btn" onclick="window.print()">인쇄</button>
+    <button class="btn" onclick="resetAll()">초기화</button>
+  </div>
+  <div class="result-panel" id="result-panel">
+    <h3>검사 결과 요약</h3>
+    <table id="result-table"></table>
+  </div>
+</div>
+<script>
+const ITEMS=[
+  {id:'feeding',cat:'sc',label:'식사 (Feeding)',sub:'보조 도구 사용 허용',max:10,opts:[{v:0,t:'완전 의존',desc:'완전 의존, 비위관 영양'},{v:2,t:'최대 도움',desc:'숟가락 등 도구는 다루나 식사 중 적극적 도움 필요'},{v:5,t:'중등도 도움',desc:'감독 하에 스스로 먹을 수 있으나 세팅(버터 바르기·뚜껑 열기 등) 도움 필요'},{v:8,t:'최소 도움',desc:'준비된 식판에서 독립적으로 먹으나 고기 자르기 등 일부 도움 필요'},{v:10,t:'완전 독립',desc:'보조 도구 착용 포함, 식판이 닿는 거리에 있으면 완전 독립 식사'}]},
+  {id:'grooming',cat:'sc',label:'개인위생 (Personal Hygiene)',sub:'세면·머리빗기·이닦기·면도',max:5,opts:[{v:0,t:'완전 의존',desc:'개인위생 전반 의존'},{v:1,t:'최대 도움',desc:'모든 단계에 도움 필요하나 약간 참여'},{v:3,t:'중등도 도움',desc:'한 가지 이상 단계에 도움 필요'},{v:4,t:'최소 도움',desc:'대부분 스스로 하나 사전/사후 최소 도움 필요'},{v:5,t:'완전 독립',desc:'손·얼굴 씻기, 머리빗기, 이닦기, 면도 완전 독립 (남성: 면도기 준비, 여성: 화장 포함)'}]},
+  {id:'bathing',cat:'sc',label:'목욕 (Bathing)',sub:'욕조·샤워·스폰지 목욕',max:5,opts:[{v:0,t:'완전 의존',desc:'목욕 전반 의존'},{v:1,t:'최대 도움',desc:'대부분 도움 필요, 약간 참여 가능'},{v:3,t:'중등도 도움',desc:'샤워/욕조 이동 또는 씻기·말리기 중 도움 필요'},{v:4,t:'최소 도움',desc:'온도 조절·이동 안전을 위한 감독 필요'},{v:5,t:'완전 독립',desc:'욕조·샤워·스폰지 목욕, 방법에 관계없이 모든 단계 독립'}]},
+  {id:'dressing',cat:'sc',label:'착의 (Dressing)',sub:'보조기·신발 포함',max:10,opts:[{v:0,t:'완전 의존',desc:'착의에 전혀 참여 불가'},{v:2,t:'최대 도움',desc:'어느 정도 참여하나 착·탈의 전반 의존'},{v:5,t:'중등도 도움',desc:'입기·벗기 일부 도움 필요'},{v:8,t:'최소 도움',desc:'단추·지퍼·신발끈 등 잠금장치 최소 도움 필요'},{v:10,t:'완전 독립',desc:'보조기·신발 포함, 처방된 모든 의류 독립 착탈'}]},
+  {id:'bowel',cat:'sc',label:'장 조절 (Bowel Control)',sub:'좌약·관장 관리 포함',max:10,opts:[{v:0,t:'완전 의존',desc:'장 실금'},{v:2,t:'최대 도움',desc:'적절한 자세·장 운동 촉진 기법에 도움 필요'},{v:5,t:'중등도 도움',desc:'자세는 가능하나 촉진 기법·뒤처리 도움 필요, 잦은 실금'},{v:8,t:'최소 도움',desc:'좌약·관장 감독 필요, 가끔 실금'},{v:10,t:'완전 독립',desc:'실금 없음, 필요시 좌약·관장 독립 사용'}]},
+  {id:'bladder',cat:'sc',label:'방광 조절 (Bladder Control)',sub:'도뇨관·외부 장치 관리 포함',max:10,opts:[{v:0,t:'완전 의존',desc:'요실금 또는 유치 도뇨관 전적 의존'},{v:2,t:'최대 도움',desc:'실금 있으나 내·외부 장치 적용 보조 가능'},{v:5,t:'중등도 도움',desc:'낮에는 대체로 건조, 밤에는 실금·장치 도움 필요'},{v:8,t:'최소 도움',desc:'낮·밤 대체로 건조, 가끔 실금 또는 장치 최소 도움'},{v:10,t:'완전 독립',desc:'요실금 없음, 내·외부 장치 독립 관리'}]},
+  {id:'toilet',cat:'sc',label:'화장실 사용 (Toilet Transfers)',sub:'옷 조절·뒤처리·물 내리기 포함',max:10,opts:[{v:0,t:'완전 의존',desc:'화장실 사용 전혀 불가'},{v:2,t:'최대 도움',desc:'화장실 사용 전반 도움 필요'},{v:5,t:'중등도 도움',desc:'옷 조절·이동·손 씻기 중 일부 도움 필요'},{v:8,t:'최소 도움',desc:'일반 변기 안전을 위한 감독 필요, 밤 이동변기 비우기·청소 도움'},{v:10,t:'완전 독립',desc:'변기 오르내리기, 옷 조절, 뒤처리 완전 독립. 이동변기·소변기 비우기·청소 독립'}]},
+  {id:'transfer',cat:'mo',label:'이동 — 의자·침대 (Chair / Bed Transfer)',sub:'휠체어 브레이크·발판 포함',max:15,opts:[{v:0,t:'완전 의존',desc:'앉기 균형 불가, 2인 들어올리기 필요 (기계 보조 포함)'},{v:3,t:'최대 도움',desc:'앉기는 가능하나 이동 모든 단계에 1인 최대 도움 필요'},{v:8,t:'중등도 도움',desc:'이동의 어느 단계에서든 1인 도움 필요'},{v:12,t:'최소 도움',desc:'안전·자신감을 위한 감독 또는 작은 도움 필요'},{v:15,t:'완전 독립',desc:'보행·휠체어로 침대 접근, 브레이크 잠금·발판 올리기 포함, 모든 단계 독립'}]},
+  {id:'ambulation',cat:'mo',label:'보행 (Ambulation)',sub:'보조기구 허용 · 50m 기준 · 0점이면 아래 휠체어 항목 채점',max:15,opts:[{v:0,t:'완전 의존',desc:'보행 불가 → 아래 휠체어 항목으로 이동'},{v:3,t:'최대 도움',desc:'보행 중 1인 이상 상시 동행·보조기 조작 도움 필요'},{v:8,t:'중등도 도움',desc:'50m 보행에 1인 도움 필요'},{v:12,t:'최소 도움',desc:'50m 보행 독립적이나 위험 상황 시 감독 필요'},{v:15,t:'완전 독립',desc:'목발·지팡이·보행기 포함, 50m 이상 완전 독립. 보조기 착탈·잠금 포함'}]},
+  {id:'wheelchair',cat:'mo',label:'휠체어 (Ambulation / Wheelchair)',sub:'★ 보행 항목 0점 + 휠체어 훈련받은 경우에만 채점',max:5,conditional:true,opts:[{v:0,t:'완전 의존',desc:'휠체어 이동 전적 의존'},{v:1,t:'최대 도움',desc:'평지 단거리 자가 추진 가능, 그 외 모든 단계 도움 필요'},{v:3,t:'중등도 도움',desc:'일상 지형에서 어느 정도 자가 추진 가능, 테이블·침대 등 이동에 1인 상시 도움'},{v:4,t:'최소 도움',desc:'대부분 지형 자가 추진 가능, 좁은 코너·10cm 연석 최소 도움'},{v:5,t:'완전 독립',desc:'코너 돌기·회전·테이블·침대·화장실 이동 독립, 50m 이상 추진·연석 넘기 가능'}]},
+  {id:'stairs',cat:'mo',label:'계단 (Stair Climbing)',sub:'난간·보조기구 허용',max:10,opts:[{v:0,t:'완전 의존',desc:'계단 오르내리기 불가'},{v:2,t:'최대 도움',desc:'계단 모든 단계에 도움 필요 (보조기 포함)'},{v:5,t:'중등도 도움',desc:'오르내리기 가능하나 보조기 운반 불가, 감독·도움 필요'},{v:8,t:'최소 도움',desc:'대체로 도움 불필요, 아침 강직·호흡곤란 등으로 가끔 감독 필요'},{v:10,t:'완전 독립',desc:'난간·지팡이·목발 포함, 한 층 이상 완전 독립. 보조기 운반하며 오르내리기 가능'}]}
+];
+const scores={};
+ITEMS.forEach(i=>scores[i.id]=0);
+function dotClass(idx){return['d0','d1','d2','d3','d4'][idx];}
+function badgeClass(v,max){if(v===0)return'b-low';const r=v/max;if(r<=0.4)return'b-low';if(r<=0.65)return'b-mid';if(r<1)return'b-high';return'b-full';}
+function build(){
+  const sc=document.getElementById('sec-sc'),mo=document.getElementById('sec-mo');
+  ITEMS.forEach(item=>{
+    const div=document.createElement('div');div.className='section';
+    const cond=item.conditional?`<div class="cond-note">★ 보행(Ambulation) 항목에서 <strong>0점</strong>이고, 환자가 휠체어 조작 훈련을 받은 경우에만 채점합니다.</div>`:'';
+    div.innerHTML=`<div class="item-head" onclick="toggleB('bd-${item.id}')"><div><div class="item-title">${item.label}</div><div class="item-sub">${item.sub}</div></div><div class="item-badge" id="bg-${item.id}">0 / ${item.max}점</div></div><div class="item-body open" id="bd-${item.id}">${cond}<div class="radio-col">${item.opts.map((o,oi)=>`<label class="radio-btn" id="rb-${item.id}-${o.v}" onclick="pick(event,'${item.id}',${o.v})"><input type="radio" name="${item.id}" value="${o.v}"><div class="sdot ${dotClass(oi)}"></div><div><span class="sv">${o.v}점</span> <strong>${o.t}</strong> — ${o.desc}</div></label>`).join('')}</div></div>`;
+    (item.cat==='sc'?sc:mo).appendChild(div);
+  });
+}
+function toggleB(id){document.getElementById(id).classList.toggle('open');}
+function pick(e,itemId,val){
+  e.stopPropagation();
+  const item=ITEMS.find(i=>i.id===itemId);
+  item.opts.forEach(o=>document.getElementById(`rb-${itemId}-${o.v}`)?.classList.remove('sel'));
+  document.getElementById(`rb-${itemId}-${val}`)?.classList.add('sel');
+  scores[itemId]=val;
+  const bg=document.getElementById(`bg-${itemId}`);
+  bg.textContent=`${val} / ${item.max}점`;bg.className='item-badge '+badgeClass(val,item.max);
+  updateTotal();
+}
+function updateTotal(){
+  const scIds=['feeding','grooming','bathing','dressing','bowel','bladder','toilet'];
+  const sc=scIds.reduce((a,id)=>a+(scores[id]||0),0);
+  const amb=scores['ambulation']||0;
+  const wc=amb===0?(scores['wheelchair']||0):0;
+  const mo=(scores['transfer']||0)+amb+wc+(scores['stairs']||0);
+  const tot=sc+mo;
+  document.getElementById('tot-sc').textContent=sc;
+  document.getElementById('tot-mo').textContent=mo;
+  document.getElementById('tot-all').textContent=tot;
+  const fill=document.getElementById('i-fill');
+  fill.style.width=tot+'%';
+  let color,label;
+  if(tot<=20){color='#E24B4A';label='완전 의존 (0–20)';}
+  else if(tot<=60){color='#EF9F27';label='심한 의존 (21–60)';}
+  else if(tot<=90){color='#BA7517';label='중등도 의존 (61–90)';}
+  else if(tot<=99){color='#639922';label='약간 의존 (91–99)';}
+  else{color='#0F6E56';label='완전 독립 (100)';}
+  fill.style.background=color;document.getElementById('i-label').textContent=label;
+}
+function showResult(){
+  const tot=parseInt(document.getElementById('tot-all').textContent)||0;
+  const sc=parseInt(document.getElementById('tot-sc').textContent)||0;
+  const mo=parseInt(document.getElementById('tot-mo').textContent)||0;
+  const rows=[['환자명',document.getElementById('pt-name').value||'-'],['등록번호',document.getElementById('pt-id').value||'-'],['검사자',document.getElementById('examiner').value||'-'],['검사일',document.getElementById('exam-date').value||'-'],['진단명',document.getElementById('diagnosis').value||'-'],['자기관리',`${sc} / 55점`],['이동·보행',`${mo} / 45점`],['총점',`${tot} / 100점`],['기능 수준',document.getElementById('i-label').textContent],['특이사항',document.getElementById('comments').value||'-']];
+  ITEMS.forEach(item=>{const v=scores[item.id];const opt=item.opts.find(o=>o.v===v);rows.push([item.label.split(' (')[0],`${v}점 — ${opt?opt.t:'-'}`]);});
+  document.getElementById('result-table').innerHTML=rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
+  const panel=document.getElementById('result-panel');panel.style.display='block';panel.scrollIntoView({behavior:'smooth'});
+}
+function resetAll(){
+  ITEMS.forEach(item=>{scores[item.id]=0;item.opts.forEach(o=>document.getElementById(`rb-${item.id}-${o.v}`)?.classList.remove('sel'));const bg=document.getElementById(`bg-${item.id}`);bg.textContent=`0 / ${item.max}점`;bg.className='item-badge';});
+  ['tot-sc','tot-mo','tot-all'].forEach(id=>document.getElementById(id).textContent='0');
+  document.getElementById('i-fill').style.width='0%';document.getElementById('i-fill').style.background='#E24B4A';
+  document.getElementById('i-label').textContent='완전 의존 (0–20)';
+  document.getElementById('comments').value='';
+  ['pt-name','pt-id','examiner','diagnosis'].forEach(id=>{document.getElementById(id).value='';});
+  document.getElementById('exam-date').value='';document.getElementById('result-panel').style.display='none';
+}
+build();
+</script>
+</body>
+</html>

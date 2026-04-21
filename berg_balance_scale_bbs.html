@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Berg Balance Scale (BBS)</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', sans-serif; background: #f5f5f3; color: #1a1a18; padding: 2rem 1rem; min-height: 100vh; }
+  .page { max-width: 720px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .header { border-bottom: 2px solid #d0cfc7; padding-bottom: 1rem; margin-bottom: 1.5rem; }
+  .title { font-size: 20px; font-weight: 600; color: #1a1a18; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #888780; }
+  .patient-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
+  .patient-grid input { width: 100%; padding: 7px 10px; border: 0.5px solid #b4b2a9; border-radius: 8px; font-size: 13px; background: #fff; color: #1a1a18; }
+  .patient-grid input::placeholder { color: #b4b2a9; }
+  .info-box { font-size: 12px; color: #5f5e5a; background: #f1efe8; border-radius: 8px; padding: 8px 12px; margin-bottom: 10px; line-height: 1.6; }
+  .info-box strong { color: #1a1a18; }
+  .section { margin-bottom: 8px; border: 0.5px solid #d3d1c7; border-radius: 10px; overflow: hidden; }
+  .item-head { padding: 10px 14px; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; background: #fff; cursor: pointer; user-select: none; }
+  .item-head:hover { background: #f8f8f6; }
+  .item-num { font-size: 11px; color: #b4b2a9; margin-bottom: 2px; }
+  .item-title { font-size: 13px; font-weight: 600; color: #1a1a18; line-height: 1.4; }
+  .item-instr { font-size: 11px; color: #5f5e5a; margin-top: 2px; font-style: italic; line-height: 1.5; }
+  .item-badge { flex-shrink: 0; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; background: #f1efe8; color: #888780; white-space: nowrap; min-width: 42px; text-align: center; }
+  .b0{background:#FCEBEB;color:#A32D2D}.b1{background:#FEF0DA;color:#7A4607}.b2{background:#FAEEDA;color:#633806}.b3{background:#E8F5D7;color:#3B6D11}.b4{background:#E6F1FB;color:#0C447C}
+  .item-body { display: none; border-top: 0.5px solid #d3d1c7; padding: 10px 14px; background: #fff; }
+  .item-body.open { display: block; }
+  .skip-note { font-size: 11px; color: #0F6E56; padding: 5px 8px; background: #E1F5EE; border-radius: 6px; margin-bottom: 8px; line-height: 1.5; }
+  .radio-col { display: flex; flex-direction: column; gap: 5px; }
+  .radio-btn { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; padding: 6px 10px; border: 0.5px solid #d3d1c7; border-radius: 8px; font-size: 12px; color: #5f5e5a; transition: all 0.15s; background: #fff; line-height: 1.5; user-select: none; }
+  .radio-btn:hover { border-color: #888780; background: #f8f8f6; }
+  .radio-btn.sel { background: #E6F1FB; border-color: #185FA5; color: #185FA5; }
+  .radio-btn input { display: none; }
+  .sdot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .d4{background:#0F6E56}.d3{background:#639922}.d2{background:#EF9F27}.d1{background:#E05A1E}.d0{background:#E24B4A}
+  .sv { font-weight: 700; min-width: 20px; }
+  .prog-row { display: flex; align-items: center; gap: 10px; margin: 1.25rem 0 0.5rem; }
+  .prog-text { font-size: 12px; color: #888780; white-space: nowrap; }
+  .prog-bar { flex: 1; height: 4px; border-radius: 2px; background: #d3d1c7; overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 2px; background: #185FA5; transition: width 0.3s; }
+  .score-row { display: flex; align-items: center; gap: 16px; margin-bottom: 0.5rem; }
+  .score-big { font-size: 36px; font-weight: 700; color: #1a1a18; line-height: 1; }
+  .score-max { font-size: 14px; color: #888780; margin-top: 4px; }
+  .interp-pill { padding: 4px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+  .ip-low{background:#FCEBEB;color:#A32D2D}.ip-mod{background:#FAEEDA;color:#633806}.ip-high{background:#E6F1FB;color:#0C447C}
+  .interp-bar { height: 8px; border-radius: 4px; background: #d3d1c7; margin-bottom: 1.25rem; overflow: hidden; }
+  .interp-fill { height: 100%; border-radius: 4px; transition: width 0.3s, background 0.3s; width: 0%; background: #E24B4A; }
+  .comment-area { width: 100%; min-height: 60px; padding: 8px 10px; border: 0.5px solid #b4b2a9; border-radius: 8px; font-size: 13px; background: #fff; color: #1a1a18; resize: vertical; font-family: inherit; }
+  .btn-row { display: flex; gap: 8px; margin-top: 1rem; }
+  .btn { padding: 8px 16px; border: 0.5px solid #b4b2a9; border-radius: 8px; font-size: 13px; cursor: pointer; background: #fff; color: #1a1a18; }
+  .btn:hover { background: #f1efe8; }
+  .btn-primary { background: #185FA5; color: #E6F1FB; border-color: #185FA5; }
+  .btn-primary:hover { background: #0C447C; }
+  .result-panel { display: none; margin-top: 1.5rem; padding: 1rem 1.25rem; border: 0.5px solid #B5D4F4; border-radius: 12px; background: #E6F1FB; }
+  .result-panel h3 { font-size: 14px; font-weight: 600; color: #0C447C; margin-bottom: 10px; }
+  .result-panel table { width: 100%; font-size: 13px; border-collapse: collapse; }
+  .result-panel td { padding: 4px 8px; color: #185FA5; }
+  .result-panel td:first-child { color: #0C447C; font-weight: 600; width: 50%; }
+  @media print {
+    body { background: #fff; padding: 0; }
+    .page { box-shadow: none; padding: 1rem; }
+    .btn-row, .result-panel { display: none !important; }
+    .item-body { display: block !important; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="title">Berg Balance Scale (BBS)</div>
+    <div class="subtitle">버그 균형 척도 · Berg, Wood-Dauphinee, Williams &amp; Maki, 1992 · 14항목 / 56점</div>
+  </div>
+
+  <div class="patient-grid">
+    <input type="text" placeholder="환자명" id="pt-name">
+    <input type="text" placeholder="등록번호 / ID" id="pt-id">
+    <input type="text" placeholder="검사자" id="examiner">
+    <input type="date" id="exam-date">
+    <input type="text" placeholder="진단명" id="diagnosis" style="grid-column:1/-1">
+  </div>
+
+  <div class="info-box">
+    <strong>필요 장비</strong> — 초시계, 자(5·12.5·25cm 표시), 팔걸이 없는 의자 + 팔걸이 있는 의자, 발판(평균 계단 높이), 바닥에 놓을 작은 물체(신발/슬리퍼)
+  </div>
+  <div class="info-box">
+    <strong>일반 지침</strong> — 각 항목에서 <u>가장 낮은 수행 수준</u>으로 채점. 시간·거리 기준 미달, 감독 필요, 외부 지지 접촉 또는 검사자 도움 시 감점. ★ 항목 2에서 4점(2분 독립 기립) 달성 시, 항목 3은 자동 4점 처리 후 항목 4로 건너뜀.
+  </div>
+
+  <div id="sections"></div>
+
+  <div class="prog-row">
+    <div class="prog-text" id="prog-text">0 / 14 항목 완료</div>
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+
+  <div class="score-row">
+    <div>
+      <div class="score-big" id="tot">0</div>
+      <div class="score-max">/ 56점</div>
+    </div>
+    <div class="interp-pill ip-low" id="interp-pill">낙상 고위험 (0–20)</div>
+  </div>
+  <div class="interp-bar"><div class="interp-fill" id="i-fill"></div></div>
+
+  <div style="margin-bottom:1rem">
+    <div style="font-size:13px;color:#5f5e5a;margin-bottom:6px">특이사항 / 소견</div>
+    <textarea class="comment-area" id="comments" placeholder="검사 중 특이사항이나 임상 소견을 기록하세요"></textarea>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="showResult()">결과 보기</button>
+    <button class="btn" onclick="window.print()">인쇄</button>
+    <button class="btn" onclick="resetAll()">초기화</button>
+  </div>
+
+  <div class="result-panel" id="result-panel">
+    <h3>검사 결과 요약</h3>
+    <table id="result-table"></table>
+  </div>
+</div>
+
+<script>
+const ITEMS = [
+  {id:'i1',num:'1',label:'앉기 → 서기 (Sitting to Standing)',instr:'지시: "서 주세요. 가능하면 손을 짚지 않도록 하세요."',opts:[{v:4,desc:'손 사용 없이 서고 독립적으로 균형 유지'},{v:3,desc:'손을 사용하여 독립적으로 서기 가능'},{v:2,desc:'여러 번 시도 후 손을 짚고 서기 가능'},{v:1,desc:'서거나 균형을 잡는 데 최소 도움 필요'},{v:0,desc:'중등도~최대 도움 없이는 서지 못함'}]},
+  {id:'i2',num:'2',label:'서기 유지 (Standing Unsupported)',instr:'지시: "손잡지 않고 2분간 서 주세요."',skip:'★ 2분 독립 기립(4점) 달성 시, 항목 3은 자동 4점 처리 후 항목 4로 건너뜁니다.',opts:[{v:4,desc:'2분간 안전하게 서기 가능'},{v:3,desc:'감독 하에 2분간 서기 가능'},{v:2,desc:'지지 없이 30초간 서기 가능'},{v:1,desc:'여러 번 시도 후 지지 없이 30초 서기 가능'},{v:0,desc:'도움 없이 30초간 서지 못함'}]},
+  {id:'i3',num:'3',label:'등받이 없이 앉기 (Sitting Unsupported)',instr:'지시: "팔짱 끼고 2분간 앉아 주세요." (발은 바닥 또는 발판에 지지)',opts:[{v:4,desc:'2분간 안전하고 안정적으로 앉기 가능'},{v:3,desc:'감독 하에 2분간 앉기 가능'},{v:2,desc:'지지 없이 30초간 앉기 가능'},{v:1,desc:'지지 없이 10초간 앉기 가능'},{v:0,desc:'지지 없이 10초간 앉지 못함'}]},
+  {id:'i4',num:'4',label:'서기 → 앉기 (Standing to Sitting)',instr:'지시: "앉아 주세요."',opts:[{v:4,desc:'손을 최소한으로 사용하여 안전하게 앉음'},{v:3,desc:'손을 사용하여 하강 조절'},{v:2,desc:'다리 뒷면을 의자에 대어 하강 조절'},{v:1,desc:'독립적으로 앉으나 하강이 조절되지 않음'},{v:0,desc:'앉는 데 도움 필요'}]},
+  {id:'i5',num:'5',label:'이동 (Transfers)',instr:'지시: 팔걸이 있는 의자와 없는 의자(또는 침대) 배치. 양 방향으로 이동 수행.',opts:[{v:4,desc:'손을 약간 사용하여 안전하게 이동'},{v:3,desc:'손을 명확히 사용해야 안전하게 이동'},{v:2,desc:'구두 지시 및/또는 감독 하에 이동'},{v:1,desc:'1인 도움 필요'},{v:0,desc:'2인 도움 또는 안전을 위한 감독 필요'}]},
+  {id:'i6',num:'6',label:'눈 감고 서기 (Standing with Eyes Closed)',instr:'지시: "눈을 감고 10초간 서 주세요."',opts:[{v:4,desc:'10초간 안전하게 서기 가능'},{v:3,desc:'감독 하에 10초간 서기 가능'},{v:2,desc:'3초간 서기 가능'},{v:1,desc:'3초간 눈을 감지 못하나 균형 유지'},{v:0,desc:'낙상 방지를 위한 도움 필요'}]},
+  {id:'i7',num:'7',label:'발 모아 서기 (Standing with Feet Together)',instr:'지시: "발을 모으고 손잡지 않고 서 주세요."',opts:[{v:4,desc:'발 모아 독립적으로 1분간 안전하게 서기'},{v:3,desc:'발 모아 독립적으로, 감독 하에 1분간 서기'},{v:2,desc:'발 모아 독립적으로 30초 유지'},{v:1,desc:'자세 잡는 데 도움 필요, 발 모아 15초 유지'},{v:0,desc:'자세 잡는 데 도움 필요, 15초 유지 불가'}]},
+  {id:'i8',num:'8',label:'팔 뻗기 (Reaching Forward with Outstretched Arm)',instr:'지시: "팔을 어깨 높이(90°)로 들고 최대한 앞으로 뻗으세요." 자를 손끝에 대고 전방 이동 거리 측정. 발이 움직이지 않아야 함.',opts:[{v:4,desc:'자신있게 25cm(10인치) 이상 뻗기 가능'},{v:3,desc:'12.5cm(5인치) 이상 안전하게 뻗기 가능'},{v:2,desc:'5cm(2인치) 이상 안전하게 뻗기 가능'},{v:1,desc:'뻗으나 감독 필요'},{v:0,desc:'시도 중 균형 잃음 또는 외부 지지 필요'}]},
+  {id:'i9',num:'9',label:'바닥 물건 줍기 (Retrieving Object from Floor)',instr:'지시: "발 앞에 놓인 슬리퍼(신발)를 주워 주세요."',opts:[{v:4,desc:'안전하고 쉽게 슬리퍼 줍기 가능'},{v:3,desc:'줍기 가능하나 감독 필요'},{v:2,desc:'줍지 못하나 슬리퍼 2~5cm 근처까지 접근하며 균형 유지'},{v:1,desc:'줍지 못하며 시도 중 감독 필요'},{v:0,desc:'시도 불가 또는 균형 유지를 위한 도움 필요'}]},
+  {id:'i10',num:'10',label:'뒤돌아보기 (Turning to Look Behind)',instr:'지시: "왼쪽 어깨 너머로 직접 뒤를 돌아보세요. 오른쪽도 반복하세요."',opts:[{v:4,desc:'양측 뒤보기 가능, 체중 이동 양호'},{v:3,desc:'한쪽만 잘 됨, 반대쪽 체중 이동 감소'},{v:2,desc:'옆만 돌아보나 균형 유지'},{v:1,desc:'회전 시 감독 필요'},{v:0,desc:'균형 유지 또는 낙상 방지를 위한 도움 필요'}]},
+  {id:'i11',num:'11',label:'360° 회전 (Turning 360 Degrees)',instr:'지시: "완전히 한 바퀴 돌아주세요. 멈추고 반대 방향으로 한 바퀴 더 도세요."',opts:[{v:4,desc:'양방향 모두 4초 이내 안전하게 360° 회전'},{v:3,desc:'한쪽 방향만 4초 이내 안전하게 360° 회전'},{v:2,desc:'안전하게 360° 회전 가능하나 느림'},{v:1,desc:'밀착 감독 또는 구두 지시 필요'},{v:0,desc:'회전 중 도움 필요'}]},
+  {id:'i12',num:'12',label:'발 교대 디딤 (Placing Alternate Foot on Stool)',instr:'지시: "양발을 교대로 발판에 올려놓으세요. 각 발이 4번씩 닿을 때까지 계속하세요." (총 8스텝)',opts:[{v:4,desc:'독립적·안전하게 20초 이내에 8스텝 완료'},{v:3,desc:'독립적으로 8스텝 완료, 20초 초과'},{v:2,desc:'감독 하에 도움 없이 4스텝 완료'},{v:1,desc:'최소 도움으로 2스텝 이상 가능'},{v:0,desc:'낙상 방지를 위한 도움 필요 또는 시도 불가'}]},
+  {id:'i13',num:'13',label:'앞뒤로 발 일직선 서기 (Standing One Foot in Front)',instr:'지시: "한 발을 다른 발 바로 앞에 놓으세요. 직선 배열이 어렵다면, 앞발의 뒤꿈치가 뒷발의 발가락보다 앞에 오도록 가능한 한 멀리 내딛어 주세요."',opts:[{v:4,desc:'탠덤 자세(발 일직선)로 독립적으로 30초 유지'},{v:3,desc:'발을 앞으로 배치하여 독립적으로 30초 유지'},{v:2,desc:'작게 내딛어 독립적으로 30초 유지'},{v:1,desc:'내딛는 데 도움 필요, 15초 유지'},{v:0,desc:'내딛거나 서 있는 중 균형 잃음'}]},
+  {id:'i14',num:'14',label:'한 발로 서기 (Standing on One Foot)',instr:'지시: "손잡지 않고 가능한 한 오래 한 발로 서 주세요."',opts:[{v:4,desc:'독립적으로 다리 들고 10초 이상 유지'},{v:3,desc:'독립적으로 다리 들고 5~10초 유지'},{v:2,desc:'독립적으로 다리 들고 3초 이상 유지'},{v:1,desc:'다리 들기 시도하나 3초 유지 못함, 독립 기립 유지'},{v:0,desc:'시도 불가 또는 낙상 방지 도움 필요'}]}
+];
+
+const scores={}, answered={};
+ITEMS.forEach(i=>{scores[i.id]=null;answered[i.id]=false;});
+function dotClass(v){return['d0','d1','d2','d3','d4'][v];}
+function badgeClass(v){return['b0','b1','b2','b3','b4'][v];}
+
+function build(){
+  const cont=document.getElementById('sections');
+  ITEMS.forEach(item=>{
+    const div=document.createElement('div');div.className='section';
+    const sk=item.skip?`<div class="skip-note">${item.skip}</div>`:'';
+    div.innerHTML=`<div class="item-head" onclick="toggleB('bd-${item.id}')"><div style="flex:1;min-width:0"><div class="item-num">항목 ${item.num}</div><div class="item-title">${item.label}</div><div class="item-instr">${item.instr}</div></div><div class="item-badge" id="bg-${item.id}">—</div></div><div class="item-body open" id="bd-${item.id}">${sk}<div class="radio-col">${item.opts.map(o=>`<label class="radio-btn" id="rb-${item.id}-${o.v}" onclick="pick(event,'${item.id}',${o.v})"><input type="radio" name="${item.id}" value="${o.v}"><div class="sdot ${dotClass(o.v)}"></div><div><span class="sv">${o.v}점</span> ${o.desc}</div></label>`).join('')}</div></div>`;
+    cont.appendChild(div);
+  });
+}
+
+function toggleB(id){document.getElementById(id).classList.toggle('open');}
+
+function pick(e,itemId,val){
+  e.stopPropagation();
+  const item=ITEMS.find(i=>i.id===itemId);
+  item.opts.forEach(o=>document.getElementById(`rb-${itemId}-${o.v}`)?.classList.remove('sel'));
+  document.getElementById(`rb-${itemId}-${val}`)?.classList.add('sel');
+  scores[itemId]=val; answered[itemId]=true;
+  const bg=document.getElementById(`bg-${itemId}`);
+  bg.textContent=`${val}점`; bg.className='item-badge '+badgeClass(val);
+  if(itemId==='i2'&&val===4){
+    scores['i3']=4; answered['i3']=true;
+    ITEMS.find(i=>i.id==='i3').opts.forEach(o=>document.getElementById(`rb-i3-${o.v}`)?.classList.remove('sel'));
+    document.getElementById('rb-i3-4')?.classList.add('sel');
+    const b3=document.getElementById('bg-i3'); b3.textContent='4점'; b3.className='item-badge b4';
+  }
+  updateTotal();
+}
+
+function updateTotal(){
+  const cnt=Object.values(answered).filter(v=>v).length;
+  const tot=Object.values(scores).reduce((a,v)=>a+(v!==null?v:0),0);
+  document.getElementById('tot').textContent=tot;
+  document.getElementById('prog-text').textContent=`${cnt} / 14 항목 완료`;
+  document.getElementById('prog-fill').style.width=(cnt/14*100)+'%';
+  const fill=document.getElementById('i-fill');
+  fill.style.width=(tot/56*100)+'%';
+  const pill=document.getElementById('interp-pill');
+  if(tot<=20){fill.style.background='#E24B4A';pill.textContent='낙상 고위험 · 휠체어 수준 (0–20)';pill.className='interp-pill ip-low';}
+  else if(tot<=40){fill.style.background='#EF9F27';pill.textContent='낙상 중위험 · 보행 보조 필요 (21–40)';pill.className='interp-pill ip-mod';}
+  else{fill.style.background='#185FA5';pill.textContent='낙상 저위험 · 독립 보행 (41–56)';pill.className='interp-pill ip-high';}
+}
+
+function showResult(){
+  const tot=Object.values(scores).reduce((a,v)=>a+(v!==null?v:0),0);
+  const rows=[['환자명',document.getElementById('pt-name').value||'-'],['등록번호',document.getElementById('pt-id').value||'-'],['검사자',document.getElementById('examiner').value||'-'],['검사일',document.getElementById('exam-date').value||'-'],['진단명',document.getElementById('diagnosis').value||'-'],['총점',`${tot} / 56점`],['낙상 위험도',document.getElementById('interp-pill').textContent],['특이사항',document.getElementById('comments').value||'-']];
+  ITEMS.forEach(item=>{const v=scores[item.id];rows.push([`항목${item.num} ${item.label.split(' (')[0]}`,v!==null?`${v}점`:'미채점']);});
+  document.getElementById('result-table').innerHTML=rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
+  const panel=document.getElementById('result-panel');panel.style.display='block';panel.scrollIntoView({behavior:'smooth'});
+}
+
+function resetAll(){
+  ITEMS.forEach(item=>{scores[item.id]=null;answered[item.id]=false;item.opts.forEach(o=>document.getElementById(`rb-${item.id}-${o.v}`)?.classList.remove('sel'));const bg=document.getElementById(`bg-${item.id}`);bg.textContent='—';bg.className='item-badge';});
+  document.getElementById('tot').textContent='0';
+  document.getElementById('prog-text').textContent='0 / 14 항목 완료';
+  document.getElementById('prog-fill').style.width='0%';
+  document.getElementById('i-fill').style.width='0%';document.getElementById('i-fill').style.background='#E24B4A';
+  document.getElementById('interp-pill').textContent='낙상 고위험 (0–20)';document.getElementById('interp-pill').className='interp-pill ip-low';
+  document.getElementById('comments').value='';
+  ['pt-name','pt-id','examiner','diagnosis'].forEach(id=>{document.getElementById(id).value='';});
+  document.getElementById('exam-date').value='';document.getElementById('result-panel').style.display='none';
+}
+build();
+</script>
+</body>
+</html>
